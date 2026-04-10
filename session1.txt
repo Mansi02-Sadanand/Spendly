@@ -1,0 +1,20 @@
+╭─── Claude Code v2.1.97 ──────────────────────────────────────────────────────╮
+│                                                 │ Tips for getting started   │
+│                  Welcome back!                  │ Run /init to create a CLA… │
+│                                                 │ ────────────────────────── │
+│                     ▐▛███▜▌                     │ Recent activity            │
+│                    ▝▜█████▛▘                    │ No recent activity         │
+│                      ▘▘ ▝▝                      │                            │
+│                                                 │                            │
+│        qwen3.5:cloud · API Usage Billing        │                            │
+│   ~\Downloads\expense-tracker\expense-tracker   │                            │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+❯ /rename 
+  ⎿  Could not generate a name: no conversation context yet. Usage: /rename
+
+❯ /rename 02-04-26 
+  ⎿  Session renamed to: 02-04-26
+
+❯ /btw 
+  ⎿  Usage: /btw

@@ -1,9 +1,18 @@
-from flask import Flask, flash, redirect, render_template, request, url_for, abort
+from flask import Flask, flash, redirect, render_template, request, session, url_for, abort
 import sqlite3
-from database.db import get_db, init_db, seed_db, create_user
+from database.db import get_db, init_db, seed_db, create_user, get_user_by_email, get_user_by_id
+from werkzeug.security import check_password_hash
 
 app = Flask(__name__)
 app.secret_key = "dev-secret-key-change-in-production"
+
+# Context processor to make user info available in all templates
+@app.context_processor
+def inject_user():
+    from database.db import get_user_by_id
+    user_id = session.get("user_id")
+    user = get_user_by_id(user_id) if user_id else None
+    return dict(current_user=user)
 
 # Initialize database on startup
 with app.app_context():
@@ -22,6 +31,10 @@ def landing():
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    # If already logged in, redirect to landing
+    if session.get("user_id"):
+        return redirect(url_for("landing"))
+
     if request.method == "POST":
         name = request.form.get("name", "").strip()
         email = request.form.get("email", "").strip()
@@ -48,8 +61,33 @@ def register():
     return render_template("register.html")
 
 
-@app.route("/login")
+@app.route("/login", methods=["GET", "POST"])
 def login():
+    # If already logged in, redirect to landing
+    if session.get("user_id"):
+        return redirect(url_for("landing"))
+
+    if request.method == "POST":
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "")
+
+        # Validate required fields
+        if not email or not password:
+            flash("Email and password are required", "error")
+            return render_template("login.html")
+
+        # Fetch user by email
+        user = get_user_by_email(email)
+
+        # Verify credentials
+        if user and check_password_hash(user["password_hash"], password):
+            session["user_id"] = user["id"]
+            flash("Welcome back!", "success")
+            return redirect(url_for("landing"))
+        else:
+            flash("Invalid email or password", "error")
+            return render_template("login.html")
+
     return render_template("login.html")
 
 
@@ -69,7 +107,9 @@ def privacy():
 
 @app.route("/logout")
 def logout():
-    return "Logout — coming in Step 3"
+    session.clear()
+    flash("You have been logged out", "success")
+    return redirect(url_for("landing"))
 
 
 @app.route("/profile")

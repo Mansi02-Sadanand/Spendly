@@ -69,6 +69,44 @@ def create_user(name: str, email: str, password: str) -> int:
         conn.close()
 
 
+def get_user_by_email(email: str):
+    """Fetch a user by email address.
+
+    Returns a dict-like row if found, None otherwise.
+    """
+    conn = get_db()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            SELECT id, name, email, password_hash, created_at
+            FROM users
+            WHERE email = ?
+        """, (email,))
+        return cursor.fetchone()
+    finally:
+        conn.close()
+
+
+def get_user_by_id(user_id: int):
+    """Fetch a user by ID.
+
+    Returns a dict-like row if found, None otherwise.
+    """
+    conn = get_db()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            SELECT id, name, email, password_hash, created_at
+            FROM users
+            WHERE id = ?
+        """, (user_id,))
+        return cursor.fetchone()
+    finally:
+        conn.close()
+
+
 def seed_db():
     """Insert sample data for development."""
     conn = get_db()

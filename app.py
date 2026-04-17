@@ -1,7 +1,9 @@
-from flask import Flask, render_template
-from database.db import get_db, init_db, seed_db
+from flask import Flask, flash, redirect, render_template, request, url_for, abort
+import sqlite3
+from database.db import get_db, init_db, seed_db, create_user
 
 app = Flask(__name__)
+app.secret_key = "dev-secret-key-change-in-production"
 
 # Initialize database on startup
 with app.app_context():
@@ -18,8 +20,31 @@ def landing():
     return render_template("landing.html")
 
 
-@app.route("/register")
+@app.route("/register", methods=["GET", "POST"])
 def register():
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "")
+
+        # Validation: check required fields
+        if not name or not email or not password:
+            flash("All fields are required", "error")
+            return render_template("register.html", error="All fields are required")
+
+        # Validation: password length
+        if len(password) < 6:
+            flash("Password must be at least 6 characters", "error")
+            return render_template("register.html", error="Password must be at least 6 characters")
+
+        try:
+            create_user(name, email, password)
+            flash("Account created successfully! Please log in.", "success")
+            return redirect(url_for("login"))
+        except sqlite3.IntegrityError:
+            flash("Email already registered", "error")
+            return render_template("register.html", error="Email already registered")
+
     return render_template("register.html")
 
 
